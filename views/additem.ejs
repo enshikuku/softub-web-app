@@ -1,0 +1,33 @@
+<%- include('partials/header') %>
+    <%- include('partials/nav') %>
+    <section id="products" class="products">
+        <div class="container" data-aos="fade-up">
+            <div class="section-title products-home">
+                <h2>Add Item</h2>
+            </div>
+
+            <div class="row" style="color: #fff;">
+                <form action="/additem" method="post" enctype="multipart/form-data" class="php-email-form additem">
+                    <% if(error) { %>
+                        <p class="error"><%= message %></p>
+                    <% } %>
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <input type="text" name="name" value="<%= item.name %>" class="form-control" id="name" placeholder="Product Name" required>
+                        </div>
+                        <div class="col-md-6 form-group mt-3 mt-md-0">
+                            <input type="price" class="form-control" value="<%= item.price %>" name="price" id="price" placeholder="Product Price" required>
+                        </div>
+                    </div>
+                    <div class="form-group mt-3">
+                        <input type="file" class="form-control" value="<%= item.image %>" name="image" id="image" placeholder="Product Image" accept="image/*" required>
+                    </div>
+                    <div class="form-group mt-3">
+                        <textarea class="form-control" value="<%= item.description %>" name="description" rows="5" placeholder="Product Description" required></textarea>
+                    </div>
+                    <div class="text-center"><input type="submit" value="Add to Database"></div>
+                </form>
+            </div>
+        </div>
+    </section>
+<%- include('partials/footer') %>

@@ -2,6 +2,7 @@ import express from 'express'
 import mysql from 'mysql'
 import session from 'express-session'
 import bcrypt from 'bcrypt'
+import multer from 'multer'
 
 
 const app = express()
@@ -10,8 +11,21 @@ const connection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: '',
-    database: 'agrihub',
+    database: 'softhub'
 })
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, './public/productimage')
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        cb(null, file.fieldname + '-' + uniqueSuffix)
+    }
+})
+
+
+const upload = multer({ storage: storage })
 
 
 app.set('view engine', 'ejs')
@@ -38,13 +52,39 @@ function loginRequired(req, res) {
     res.locals.isLogedIn || res.redirect('/login')
 }
 
+function generateid() {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const randomCharacters = Array.from({ length: 10 }, () => characters.charAt(Math.floor(Math.random() * characters.length)));
+    const genID = randomCharacters.join('');
+    return genID;
+}
+function checkIfIdExists(id, table) {
+    let sql = `SELECT * FROM ${table} WHERE id = ?`
+    connection.query(sql, [id], (error, results) => {
+        if (results.length > 0) {
+            return true
+        } else {
+            return false
+        }
+    })
+}
+
 app.get('/', (req, res) => {
-    res.render('index.ejs')
+    let sql = 'SELECT * FROM product LIMIT 5'
+    connection.query(
+        sql,[], (err, products) => {
+            res.render('index.ejs', {products: products})
+        }
+    )
 })
 
-
 app.get('/shop', (req, res) => {
-    res.render('shop.ejs')
+    let sql = 'SELECT * FROM product'
+    connection.query(
+        sql,[], (err, products) => {
+            res.render('shop.ejs', {products: products})
+        }
+    )
 })
 
 app.get('/privacy-policy', (req, res) => {
@@ -134,9 +174,59 @@ app.post('/login-user', (req, res) => {
     })
 })
 
+// add item
+app.get('/additem', (req, res) => {
+    const item = {
+        name: '',
+        price: '',
+        description: '',
+        image: ''
+    }
+    res.render('additem.ejs', { error: false, item: item })
+})
+
+// Process add item form
+app.post('/additem', upload.single('image'), (req, res) => {
+    const item = {
+        name: req.body.name,
+        price: req.body.price,
+        description: req.body.description,
+        image: req.file.filename
+    }
+    let table = 'product'
+    let newId = ''
+    do {
+        newId = generateid()
+    } while (checkIfIdExists(newId, table))
+    let sql = 'INSERT INTO product (id, name, price, description, image) VALUES (?, ?, ?, ?, ?)'
+    connection.query(
+        sql,
+        [
+            newId,
+            item.name,
+            item.price,
+            item.description,
+            item.image
+        ],
+        (error, results) => {
+            res.redirect('/additem')
+        }
+    )
+})
+
+
+
+// app.get('/dashboard', (req, res) => {
+//     loginRequired(req, res)
+//     res.render('dashboard', { name: req.session.name })
+// })
 app.get('/dashboard', (req, res) => {
-    loginRequired(req, res)
-    res.render('dashboard', { name: req.session.name })
+    let sql = 'SELECT * FROM product'
+    connection.query(
+        sql,[], (err, products) => {
+            res.render('dashboard.ejs', {products: products})
+        }
+    )
 })
 
 app.get('/logout', (req, res) => {

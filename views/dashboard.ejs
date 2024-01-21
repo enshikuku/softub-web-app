@@ -1,7 +1,27 @@
 <%- include('partials/header') %>
     <%- include('partials/nav') %>
-    <main class="dashboard">
-        <h1>Dashboard</h1>
-        <p>Welcome, <%= name %></p>
-    </main>
+    <section id="products" class="products">
+        <div class="container" data-aos="fade-up">
+            <div class="section-title products-home">
+                <h2>Admin Dashboard</h2>
+            </div>
+
+            <div class="row" style="color: #fff;">
+                <% products.forEach(product => { %>
+                    <button class="shop-btn" onclick="addinputandcartcount('<%= product.id %>')">
+                        <div class="product-container"  data-aos="zoom-in" data-aos-delay="<%= products.indexOf(product)+1 %>00">
+                            <div class="product-img">
+                                <img class="product-image" src="productimage/<%= product.image %>" alt="Product Image">
+                            </div>
+                            <div class="product-details">
+                                <div class="product-name"><%= product.name %></div>
+                                <div class="product-price"><%= product.price %></div>
+                            </div>
+                            <div class="addtocart"><a href="/edit-item/<%= product.id %>" style="color: black;"><i class="bi bi-pencil-square"></i>Edit Product</a></div>
+                        </div>
+                    </button>
+                <% }) %>
+            </div>
+        </div>
+    </section>
 <%- include('partials/footer') %>
