@@ -83,26 +83,21 @@
                     <p>Check our products</p>
                     <a href="/shop" class="shop-now-btn scrollto">SHOP NOW</a>
                 </div>
-
-                <div class="row">
-                    <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4" data-aos="zoom-in" data-aos-delay="300">
-                        <div class="icon-box">
-                            <div class="icon"><img src="assets/img/hero-bg.jpg" alt=""></div>
-                            <h4><a href="/shop">Divera don</a></h4>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4" data-aos="zoom-in" data-aos-delay="300">
-                        <div class="icon-box">
-                            <div class="icon"><img src="assets/img/hero-bg.jpg" alt=""></div>
-                            <h4><a href="/shop">Divera don</a></h4>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4" data-aos="zoom-in" data-aos-delay="300">
-                        <div class="icon-box">
-                            <div class="icon"><img src="assets/img/hero-bg.jpg" alt=""></div>
-                            <h4><a href="/shop">Divera don</a></h4>
-                        </div>
-                    </div>
+                <div class="shop-row">
+                    <% products.forEach(product => { %>
+                        <a href="/shop" class="shop-btn" style="color: black;">
+                            <div class="product-container"  data-aos="zoom-in" data-aos-delay="<%= products.indexOf(product)+1 %>00">
+                                <div class="product-img">
+                                    <img class="product-image" src="productimage/<%= product.image %>" alt="Product Image">
+                                </div>
+                                <div class="product-details">
+                                    <div class="product-name"><%= product.name %></div>
+                                    <div class="product-price"><%= product.price %></div>
+                                </div>
+                                <div class="addtocart"><i class="bi bi-cart-plus"></i>Shop Now</div>
+                            </div>
+                        </a>
+                    <% }) %>
                 </div>
             </div>
         </section><!-- End Products Section -->
