@@ -1,0 +1,42 @@
+<%- include('partials/header') %>
+    <%- include('partials/nav') %>
+    <!-- ======= Products Section ======= -->
+    <section id="products" class="products">
+        <div class="container" data-aos="fade-up">
+
+            <div class="section-title products-home">
+                <h2>Products</h2>
+                <p>Click to add to Cart</p>
+                <form id="cart-items">
+                    <div class="cart">
+                        <button type="submit" class="shop-now-btn scrollto">
+                            <i class="bi bi-cart-check"></i> View Cart -
+                            <span id="cart-counter">0</span>
+                        </button>
+                    </div>                        
+                </form>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4" data-aos="zoom-in" data-aos-delay="100">
+                    <div class="icon-box">
+                        <div class="icon"><img src="assets/img/hero-bg.jpg" alt=""></div>
+                        <h4><button onclick="addinputandcartcount(2)"><i class="bi bi-cart-plus"></i>Divera don</button></h4>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4" data-aos="zoom-in" data-aos-delay="300">
+                    <div class="icon-box">
+                        <div class="icon"><img src="assets/img/hero-bg.jpg" alt=""></div>
+                        <h4><button  onclick="addinputandcartcount(4)"><i class="bi bi-cart-plus"></i>Divera don</button></h4>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4" data-aos="zoom-in" data-aos-delay="500">
+                    <div class="icon-box">
+                        <div class="icon"><img src="assets/img/hero-bg.jpg" alt=""></div>
+                        <h4><button  onclick="addinputandcartcount(5)"><i class="bi bi-cart-plus"></i>Divera don</button></h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section><!-- End Products Section -->
+<%- include('partials/footer') %>
