@@ -4,22 +4,37 @@
         <div class="container" data-aos="fade-up">
             <div class="section-title products-home">
                 <h2>Admin Dashboard</h2>
+                <a href="/additem" class="shop-now-btn scrollto">Add Products</a>
             </div>
 
-            <div class="row" style="color: #fff;">
+            <div class="row shop-row" style="color: #fff;">
                 <% products.forEach(product => { %>
-                    <button class="shop-btn" onclick="addinputandcartcount('<%= product.id %>')">
+                    <div class="shop-btn">
                         <div class="product-container"  data-aos="zoom-in" data-aos-delay="<%= products.indexOf(product)+1 %>00">
+                            <p class="product-<%= product.isactive %>">Product is <%= product.isactive %></p>
                             <div class="product-img">
                                 <img class="product-image" src="productimage/<%= product.image %>" alt="Product Image">
                             </div>
                             <div class="product-details">
                                 <div class="product-name"><%= product.name %></div>
-                                <div class="product-price"><%= product.price %></div>
+                                <div class="product-price">$<%= product.price %></div>
                             </div>
-                            <div class="addtocart"><a href="/edit-item/<%= product.id %>" style="color: black;"><i class="bi bi-pencil-square"></i>Edit Product</a></div>
+                            <form action="/edit" method="post">
+                                <input type="hidden" name="productid" value="<%= product.id %>">
+                                <button type="submit" class="addtocart" style="width: 100%;">
+                                    <span style="color: #000; font-weight: bold;"><i class="bi bi-pencil-square"></i>Edit Product</span>
+                                </button>                      
+                            </form>
+                            <div class="product-details">
+                                <form action="/deactivate/<%= product.id %>" method="post">
+                                    <input type="submit" value="Deactivate" class="deactivate">
+                                </form>
+                                <form action="/activate/<%= product.id %>" method="post">
+                                    <input type="submit" value="Activate" class="activate">
+                                </form>
+                            </div>
                         </div>
-                    </button>
+                    </div>
                 <% }) %>
             </div>
         </div>
