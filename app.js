@@ -37,15 +37,12 @@ app.use(express.static('public'))
 
 app.use(express.urlencoded({ extended: false }))
 
-
-// Prepare to use session
 app.use(session({
     secret: 'agrhub',
     saveUninitialized: false,
     resave: true
 }))
 
-// Continue to check if the user is logged in
 app.use((req, res, next) => {
     res.locals.isLogedIn = (req.session.userID !== undefined)
     next()
@@ -61,6 +58,7 @@ function generateid() {
     const genID = randomCharacters.join('')
     return genID
 }
+
 function checkIfIdExists(id, table) {
     let sql = `SELECT * FROM ${table} WHERE id = ?`
     connection.query(sql, [id], (error, results) => {
@@ -109,9 +107,7 @@ app.post('/register', (req, res) => {
         confirmPassword: req.body.confirmPassword,
         admin: req.body.adminPIN
     }
-    // check if the passwords match
     if (user.password === user.confirmPassword) {
-        // Check if admin pin is correct
         if (user.admin === ADMINPIN) {
             let sql = 'SELECT * FROM user WHERE email = ?'
             connection.query(sql, [user.email], (error, results) => {
@@ -125,8 +121,6 @@ app.post('/register', (req, res) => {
                     do {
                         newId = generateid()
                     } while (checkIfIdExists(newId, table))
-                    newId
-                    // hash the password
                     bcrypt.hash(user.password, 10, (err, hash) => {
                         let sql = 'INSERT INTO user (name, email, password, id) VALUES (?, ?, ?, ?)'
                         connection.query(sql, [user.name, user.email, hash, newId], (error, results) => {
@@ -156,7 +150,6 @@ app.get('/login', (req, res) => {
     res.render('login.ejs', { error: false, user: user })
 })
 
-// Process login page
 app.post('/login-user', (req, res) => {
     const user = {
         email: req.body.email,
@@ -165,7 +158,6 @@ app.post('/login-user', (req, res) => {
     }
     if (user.admin === ADMINPIN) {
         console.log(user)
-        // check if the user exists
         let sql = 'SELECT * FROM user WHERE email = ?'
         connection.query(sql, [user.email], (error, results) => {
             if (results.length > 0) {
@@ -191,6 +183,7 @@ app.post('/login-user', (req, res) => {
 })
 
 app.get('/dashboard', (req, res) => {
+    loginRequired(req, res)
     let sql = 'SELECT * FROM product'
     connection.query(
         sql,[], (err, products) => {
@@ -199,8 +192,8 @@ app.get('/dashboard', (req, res) => {
     )
 })
 
-// add item
 app.get('/additem', (req, res) => {
+    loginRequired(req, res)
     const item = {
         name: '',
         price: '',
@@ -210,8 +203,8 @@ app.get('/additem', (req, res) => {
     res.render('additem.ejs', { error: false, item: item })
 })
 
-// Process add item form
 app.post('/additem', upload.single('image'), (req, res) => {
+    loginRequired(req, res)
     const item = {
         name: req.body.name,
         price: req.body.price,
@@ -240,6 +233,7 @@ app.post('/additem', upload.single('image'), (req, res) => {
 })
 
 app.post('/edit', (req, res) => {
+    loginRequired(req, res)
     let id = req.body.productid
     let sql = 'SELECT * FROM product WHERE id = ?'
     connection.query(
@@ -250,6 +244,7 @@ app.post('/edit', (req, res) => {
 })
 
 app.post('/update-product', upload.single('image'), (req, res) => {
+    loginRequired(req, res)
     const item = {
         name: req.body.name,
         price: req.body.price,
@@ -274,6 +269,7 @@ app.post('/update-product', upload.single('image'), (req, res) => {
 })
 
 app.post('/activate/:id', (req, res) => {
+    loginRequired(req, res)
     let id = req.params.id
     let sql = 'UPDATE product SET isactive = ? WHERE id = ?'
     connection.query(
@@ -289,6 +285,7 @@ app.post('/activate/:id', (req, res) => {
 })
 
 app.post('/deactivate/:id', (req, res) => {
+    loginRequired(req, res)
     let id = req.params.id
     let sql = 'UPDATE product SET isactive = ? WHERE id = ?'
     connection.query(
@@ -304,6 +301,7 @@ app.post('/deactivate/:id', (req, res) => {
 })
 
 app.post('/activate-all', (req, res) => {
+    loginRequired(req, res)
     let sql = 'UPDATE product SET isactive = ?'
     connection.query(
         sql,
@@ -315,6 +313,7 @@ app.post('/activate-all', (req, res) => {
 })
 
 app.post('/deactivate-all', (req, res) => {
+    loginRequired(req, res)
     let id = req.params.id
     let sql = 'UPDATE product SET isactive = ?'
     connection.query(
