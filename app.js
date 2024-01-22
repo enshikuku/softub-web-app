@@ -3,6 +3,7 @@ import mysql from 'mysql'
 import session from 'express-session'
 import bcrypt from 'bcrypt'
 import multer from 'multer'
+import dotenv from 'dotenv'
 
 
 const app = express()
@@ -27,6 +28,8 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage })
 
+dotenv.config()
+let ADMINPIN = process.env.ADMINPIN
 
 app.set('view engine', 'ejs')
 
@@ -89,40 +92,54 @@ app.get('/shop', (req, res) => {
 
 app.get('/register', (req, res) => {
     const user = {
-        name: '',
-        phone: '',
+        fullname: '',
+        email: '',
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        adminPIN: ''
     }
     res.render('register', { error: false, user: user })
 })
 
-app.post('/register-user', (req, res) => {
+app.post('/register', (req, res) => {
     const user = {
-        name: req.body.name,
-        phone: req.body.phone,
+        name: req.body.fullname,
+        email: req.body.email,
         password: req.body.password,
-        confirmPassword: req.body.confirmPassword
+        confirmPassword: req.body.confirmPassword,
+        admin: req.body.adminPIN
     }
     // check if the passwords match
     if (user.password === user.confirmPassword) {
-        let sql = 'SELECT * FROM user WHERE phone_number = ?'
-
-        connection.query(sql, [user.phone], (error, results) => {
-            if (results.length > 0) {
-                let message = 'An account exists with that phone number!'
-                user.phone = ''
-                res.render('register', { error: true, message: message, user: user })
-            } else {
-                // hash the password
-                bcrypt.hash(user.password, 10, (err, hash) => {
-                    let sql = 'INSERT INTO user (name, phone_number, password) VALUES (?, ?, ?)'
-                    connection.query(sql, [user.name, user.phone, hash], (error, results) => {
-                        res.redirect('/login')
+        // Check if admin pin is correct
+        if (user.admin === ADMINPIN) {
+            let sql = 'SELECT * FROM user WHERE email = ?'
+            connection.query(sql, [user.email], (error, results) => {
+                if (results.length > 0) {
+                    let message = 'An account exists with that email number!'
+                    user.email = ''
+                    res.render('register', { error: true, message: message, user: user })
+                } else {
+                    let table = 'user'
+                    let newId = ''
+                    do {
+                        newId = generateid()
+                    } while (checkIfIdExists(newId, table))
+                    newId
+                    // hash the password
+                    bcrypt.hash(user.password, 10, (err, hash) => {
+                        let sql = 'INSERT INTO user (name, email, password, id) VALUES (?, ?, ?, ?)'
+                        connection.query(sql, [user.name, user.email, hash, newId], (error, results) => {
+                            res.redirect('/login')
+                        })
                     })
-                })
-            }
-        })
+                }
+            })
+        } else {
+            let message = 'Wrong Authorization PIN!'
+            user.admin = ''
+            res.render('register', { error: true, message: message, user: user })
+        }
     } else {
         let message = 'Passwords don\'t match!'
         user.confirmPassword = ''
@@ -132,8 +149,9 @@ app.post('/register-user', (req, res) => {
 
 app.get('/login', (req, res) => {
     const user = {
-        phone: '',
-        password: ''
+        email: 'lu@wi',
+        password: 'lu@wi',
+        adminPIN: '1'
     }
     res.render('login.ejs', { error: false, user: user })
 })
@@ -141,29 +159,34 @@ app.get('/login', (req, res) => {
 // Process login page
 app.post('/login-user', (req, res) => {
     const user = {
-        phone: req.body.phone,
-        password: req.body.password
+        email: req.body.email,
+        password: req.body.password,
+        admin: req.body.adminPIN
     }
-
-    // check if the user exists
-    let sql = 'SELECT * FROM user WHERE phone_number = ?'
-    connection.query(sql, [user.phone], (error, results) => {
-        if (results.length > 0) {
-            bcrypt.compare(user.password, results[0].password, (error, passwordMatches) => {
-                if (passwordMatches) {
-                    req.session.userID = results[0].id
-                    req.session.name = results[0].name.split(' ')[0]
-                    res.redirect('/dashboard')
-                } else {
-                    let message = 'Incorrect password!'
-                    res.render('login', { error: true, message: message, user: user })
-                }
-            })
-        } else {
-            let message = 'Account does not exist. Please create one'
-            res.render('login', { error: true, message: message, user: user })
-        }
-    })
+    if (user.admin === ADMINPIN) {
+        // check if the user exists
+        let sql = 'SELECT * FROM user WHERE email = ?'
+        connection.query(sql, [user.email], (error, results) => {
+            if (results.length > 0) {
+                bcrypt.compare(user.password, results[0].password, (error, passwordMatches) => {
+                    if (passwordMatches) {
+                        req.session.userID = results[0].id
+                        res.redirect('/dashboard')
+                    } else {
+                        let message = 'Incorrect password!'
+                        res.render('login', { error: true, message: message, user: user })
+                    }
+                })
+            } else {
+                let message = 'Account does not exist. Please create one'
+                res.render('login', { error: true, message: message, user: user })
+            }
+        })
+    } else {
+        let message = 'Wrong Authorization PIN!'
+        user.admin = ''
+        res.render('login', { error: true, message: message, user: user })
+    }
 })
 
 app.get('/dashboard', (req, res) => {

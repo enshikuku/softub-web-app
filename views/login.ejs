@@ -1,20 +1,30 @@
 <%- include('partials/header') %>
     <%- include('partials/nav') %>
-    <main class="user-auth-container">
-        <div id="login-container" class="auth-container">
-            <form action="/login-user" method="post" id="login-form">
-                <h1>Login</h1>
-                <% if (error) { %>
-                    <p class="error"><%= message %></p>
-                <% } %>
-                <label for="signup-phone">Phone Number:</label>
-                <input type="tel" name="phone" value="<%= user.phone %>" id="signup-phone" required>
-    
-                <label for="login-password">Password:</label>
-                <input type="password" name="password" value="<%= user.password %>" id="login-password" required>
-                
-                <input type="submit" value="Login">
-            </form>
+    <section id="products" class="products">
+        <div class="container" data-aos="fade-up">
+            <div class="section-title products-home">
+                <h2>Login</h2>
+            </div>
+
+            <div class="row" style="color: #fff;">
+                <form action="/login-user" method="post" enctype="multipart/form-data" class="php-email-form additem">
+                    <% if(error) { %>
+                        <p class="error"><%= message %></p>
+                    <% } %>
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <input type="email" name="email" value="<%= user.email %>" class="form-control" id="email" placeholder="Email" required>
+                        </div>
+                        <div class="col-md-6 form-group mt-3 mt-md-0">
+                            <input type="password" class="form-control" value="<%= user.password %>" name="password" id="password" placeholder="Password" required>
+                        </div>
+                    </div>
+                    <div class="form-group mt-3">
+                        <input type="password" class="form-control" value="<%= user.adminPIN %>" name="adminPIN" id="adminPIN" placeholder="Authorization PIN" required>
+                    </div>
+                    <div class="text-center"><input type="submit" value="Login"></div>
+                </form>
+            </div>
         </div>
-    </main>
+    </section>
 <%- include('partials/footer') %>
