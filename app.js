@@ -149,9 +149,9 @@ app.post('/register', (req, res) => {
 
 app.get('/login', (req, res) => {
     const user = {
-        email: 'lu@wi',
-        password: 'lu@wi',
-        adminPIN: '1'
+        email: '',
+        password: '',
+        adminPIN: ''
     }
     res.render('login.ejs', { error: false, user: user })
 })
