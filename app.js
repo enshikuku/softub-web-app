@@ -53,10 +53,10 @@ function loginRequired(req, res) {
 }
 
 function generateid() {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const randomCharacters = Array.from({ length: 10 }, () => characters.charAt(Math.floor(Math.random() * characters.length)));
-    const genID = randomCharacters.join('');
-    return genID;
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    const randomCharacters = Array.from({ length: 10 }, () => characters.charAt(Math.floor(Math.random() * characters.length)))
+    const genID = randomCharacters.join('')
+    return genID
 }
 function checkIfIdExists(id, table) {
     let sql = `SELECT * FROM ${table} WHERE id = ?`
@@ -70,18 +70,18 @@ function checkIfIdExists(id, table) {
 }
 
 app.get('/', (req, res) => {
-    let sql = 'SELECT * FROM product LIMIT 5'
+    let sql = 'SELECT * FROM product  WHERE isactive = ? LIMIT 5'
     connection.query(
-        sql,[], (err, products) => {
+        sql,['active'], (err, products) => {
             res.render('index.ejs', {products: products})
         }
     )
 })
 
 app.get('/shop', (req, res) => {
-    let sql = 'SELECT * FROM product'
+    let sql = 'SELECT * FROM product WHERE isactive = ?'
     connection.query(
-        sql,[], (err, products) => {
+        sql,['active'], (err, products) => {
             res.render('shop.ejs', {products: products})
         }
     )
@@ -209,22 +209,81 @@ app.post('/additem', upload.single('image'), (req, res) => {
             item.image
         ],
         (error, results) => {
-            res.redirect('/additem')
+            res.redirect('/dashboard')
         }
     )
 })
 
+app.post('/edit', (req, res) => {
+    let id = req.body.productid
+    let sql = 'SELECT * FROM product WHERE id = ?'
+    connection.query(
+        sql,[id], (err, product) => {
+            res.render('edit', {error: false, item: product[0]})
+        }
+    )
+})
 
+// Update product
+app.post('/update-product', upload.single('image'), (req, res) => {
+    const item = {
+        name: req.body.name,
+        price: req.body.price,
+        description: req.body.description,
+        image: req.file.filename,
+        id: req.body.id
+    }
+    let sql = 'UPDATE product SET name = ?, price = ?, description = ?, image = ? WHERE id = ?'
+    connection.query(
+        sql,
+        [
+            item.name,
+            item.price,
+            item.description,
+            item.image,
+            item.id
+        ],
+        (error, results) => {
+            res.redirect('/dashboard')
+        }
+    )
+})
 
-// app.get('/dashboard', (req, res) => {
-//     loginRequired(req, res)
-//     res.render('dashboard', { name: req.session.name })
-// })
 app.get('/dashboard', (req, res) => {
     let sql = 'SELECT * FROM product'
     connection.query(
-        sql,[], (err, products) => {
+        sql,['active'], (err, products) => {
             res.render('dashboard.ejs', {products: products})
+        }
+    )
+})
+
+app.post('/activate/:id', (req, res) => {
+    let id = req.params.id
+    let sql = 'UPDATE product SET isactive = ? WHERE id = ?'
+    connection.query(
+        sql,
+        [
+            'active',
+            id
+        ],
+        (err, results) => {
+            res.redirect('/dashboard')
+        }
+    )
+})
+
+app.post('/deactivate/:id', (req, res) => {
+    let id = req.params.id
+    let sql = 'UPDATE product SET isactive = ? WHERE id = ?'
+    connection.query(
+        sql,
+        [
+            'inactive',
+            id
+        ],
+        (err, results) => {
+            res.redirect('/dashboard')
         }
     )
 })
