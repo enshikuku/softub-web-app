@@ -677,18 +677,20 @@ section {
   background-color: #ff6666;
   color: #fff;
   border: 1px solid #ff3333;
-  padding: 10px 15px;
+  padding: 5px;
   cursor: pointer;
   font-weight: bold;
+  width: fit-content;
 }
 
 .activate {
   background-color: #66cc66;
   color: #fff;
   border: 1px solid #339933;
-  padding: 10px 15px;
+  padding: 5px;
   cursor: pointer;
   font-weight: bold;
+  width: fit-content;
 }
 
 .product-active {
@@ -740,8 +742,8 @@ section {
 }
 .product-img{
   position: relative;
-  width: 200px;
-  height: 200px;
+  width: 180px;
+  height: 180px;
   overflow: hidden;
 }
 
@@ -753,9 +755,20 @@ section {
 
 .product-details {
   margin-top: 10px;
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.product-activation {
+  margin-top: 10px;
+  width: fit-content;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .product-name {

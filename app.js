@@ -53,7 +53,7 @@ function loginRequired(req, res) {
 }
 
 function generateid() {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
     const randomCharacters = Array.from({ length: 10 }, () => characters.charAt(Math.floor(Math.random() * characters.length)))
     const genID = randomCharacters.join('')
     return genID
@@ -85,14 +85,6 @@ app.get('/shop', (req, res) => {
             res.render('shop.ejs', {products: products})
         }
     )
-})
-
-app.get('/privacy-policy', (req, res) => {
-    res.render('privacy.ejs')
-})
-
-app.get('/terms-of-service', (req, res) => {
-    res.render('terms.ejs')
 })
 
 app.get('/register', (req, res) => {
@@ -174,6 +166,15 @@ app.post('/login-user', (req, res) => {
     })
 })
 
+app.get('/dashboard', (req, res) => {
+    let sql = 'SELECT * FROM product'
+    connection.query(
+        sql,['active'], (err, products) => {
+            res.render('dashboard.ejs', {products: products})
+        }
+    )
+})
+
 // add item
 app.get('/additem', (req, res) => {
     const item = {
@@ -224,7 +225,6 @@ app.post('/edit', (req, res) => {
     )
 })
 
-// Update product
 app.post('/update-product', upload.single('image'), (req, res) => {
     const item = {
         name: req.body.name,
@@ -245,15 +245,6 @@ app.post('/update-product', upload.single('image'), (req, res) => {
         ],
         (error, results) => {
             res.redirect('/dashboard')
-        }
-    )
-})
-
-app.get('/dashboard', (req, res) => {
-    let sql = 'SELECT * FROM product'
-    connection.query(
-        sql,['active'], (err, products) => {
-            res.render('dashboard.ejs', {products: products})
         }
     )
 })
@@ -288,14 +279,43 @@ app.post('/deactivate/:id', (req, res) => {
     )
 })
 
+app.post('/activate-all', (req, res) => {
+    let sql = 'UPDATE product SET isactive = ?'
+    connection.query(
+        sql,
+        ['active'],
+        (err, results) => {
+            res.redirect('/dashboard')
+        }
+    )
+})
+
+app.post('/deactivate-all', (req, res) => {
+    let id = req.params.id
+    let sql = 'UPDATE product SET isactive = ?'
+    connection.query(
+        sql,
+        ['inactive'],
+        (err, results) => {
+            res.redirect('/dashboard')
+        }
+    )
+})
+
+app.get('/privacy-policy', (req, res) => {
+    res.render('privacy.ejs')
+})
+
+app.get('/terms-of-service', (req, res) => {
+    res.render('terms.ejs')
+})
+
 app.get('/logout', (req, res) => {
     loginRequired(req, res)
-    // Destroy the session and redirect to the home page
     req.session.destroy((err) => {
         res.redirect('/')
     })
 })
-
 
 const PORT = process.env.PORT || 9000
 app.listen(PORT, () => {

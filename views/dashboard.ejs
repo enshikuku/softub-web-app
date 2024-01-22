@@ -6,6 +6,14 @@
                 <h2>Admin Dashboard</h2>
                 <a href="/additem" class="shop-now-btn scrollto">Add Products</a>
             </div>
+            <div class="product-details product-activation">
+                <form action="/deactivate-all" method="post">
+                    <input type="submit" value="Deactivate All Products" class="deactivate">
+                </form>
+                <form action="/activate-all" method="post">
+                    <input type="submit" value="Activate All Products" class="activate">
+                </form>
+            </div>
 
             <div class="row shop-row" style="color: #fff;">
                 <% products.forEach(product => { %>
