@@ -164,6 +164,7 @@ app.post('/login-user', (req, res) => {
         admin: req.body.adminPIN
     }
     if (user.admin === ADMINPIN) {
+        console.log(user)
         // check if the user exists
         let sql = 'SELECT * FROM user WHERE email = ?'
         connection.query(sql, [user.email], (error, results) => {
@@ -192,7 +193,7 @@ app.post('/login-user', (req, res) => {
 app.get('/dashboard', (req, res) => {
     let sql = 'SELECT * FROM product'
     connection.query(
-        sql,['active'], (err, products) => {
+        sql,[], (err, products) => {
             res.render('dashboard.ejs', {products: products})
         }
     )
