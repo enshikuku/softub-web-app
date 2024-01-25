@@ -15,7 +15,7 @@
             <p class="item-added">Added to Cart!</p>
             <div class="shop-row">
                 <% products.forEach(product => { %>
-                    <form action="/add-to-cart" method="post" class="shop-btn">
+                    <form action="/add-to-cart" method="post" class="shop-btn" onsubmit="addToCart(event)">
                         <div class="product-container"  data-aos="zoom-in" data-aos-delay="<%= products.indexOf(product)+1 %>00">
                             <div class="product-img">
                                 <img class="product-image" src="productimage/<%= product.image %>" alt="Product Image">
@@ -37,7 +37,7 @@
                                 <option value="9">9</option>
                                 <option value="10">10</option>
                             </select>
-                            <input type="hidden" name="productid" value="<%= product.id %>">
+                            <input type="hidden" name="productid" value="<%= product.id %>" data-productid="<%= product.id %>">
                             <input type="hidden" name="cartID" value="<%= cartID %>">
                             <button class="addtocart" onclick="addcartcount()" type="submit"><i class="bi bi-cart-plus"></i>Add to Cart</button>
                         </div>
