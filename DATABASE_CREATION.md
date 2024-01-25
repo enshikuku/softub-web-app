@@ -27,3 +27,13 @@ CREATE TABLE user (
     timestamp TIMESTAMP
 );
 ```
+
+-- Create 'shopsession' table
+```sql
+CREATE TABLE shopsession (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+  	cartid VARCHAR(10),
+    productid VARCHAR(10),
+    quantity INT
+);
+```
