@@ -3,7 +3,7 @@ import mysql from 'mysql'
 import session from 'express-session'
 import bcrypt from 'bcrypt'
 import multer from 'multer'
-import dotenv from 'dotenv'
+import dotenv, { parse } from 'dotenv'
 
 
 const app = express()
@@ -74,18 +74,68 @@ app.get('/', (req, res) => {
     let sql = 'SELECT * FROM product  WHERE isactive = ? LIMIT 5'
     connection.query(
         sql,['active'], (err, products) => {
-            res.render('index.ejs', {products: products})
+            res.render('index', {products: products})
         }
     )
 })
 
 app.get('/shop', (req, res) => {
+    let table = 'shopsession'
+    let newId = ''
+    if (req.session.cartID === undefined) {
+        do {
+            newId = generateid()
+        } while (checkIfIdExists(newId, table)) 
+        req.session.cartID = newId  
+    }
     let sql = 'SELECT * FROM product WHERE isactive = ?'
     connection.query(
         sql,['active'], (err, products) => {
-            res.render('shop.ejs', {products: products})
+            res.render('shop', {products: products, cartID: req.session.cartID})
         }
     )
+})
+
+app.post('/add-to-cart', (req, res) => {
+    if (req.session.cartID === req.body.cartID) {
+        let sql = 'SELECT * FROM shopsession WHERE productid = ? AND cartid = ?'
+        connection.query(
+            sql,
+            [
+                req.body.productid,
+                req.body.cartID
+            ],
+            (error, results) => {
+                if (results.length > 0) {
+                    let sql = 'UPDATE shopsession SET quantity = ? WHERE productid = ? AND cartid = ?'
+                    connection.query(
+                        sql,
+                        [
+                            parseInt(results[0].quantity) + parseInt(req.body.quantity),
+                            req.body.productid,
+                            req.body.cartID
+                        ],
+                        (error, results) => {
+                            res.redirect('/shop')
+                        }
+                    )
+                } else {
+                    let sql = 'INSERT INTO shopsession (productid, quantity, cartid) VALUES (?, ?, ?)'
+                    connection.query(
+                        sql,
+                        [
+                            req.body.productid,
+                            parseInt(req.body.quantity),
+                            req.body.cartID
+                        ],
+                        (error, results) => {
+                            res.redirect('/shop')
+                        }
+                    )
+                }
+            }
+        )
+    }
 })
 
 app.get('/register', (req, res) => {
@@ -147,7 +197,7 @@ app.get('/login', (req, res) => {
         password: '',
         adminPIN: ''
     }
-    res.render('login.ejs', { error: false, user: user })
+    res.render('login', { error: false, user: user })
 })
 
 app.post('/login-user', (req, res) => {
@@ -187,7 +237,7 @@ app.get('/dashboard', (req, res) => {
     let sql = 'SELECT * FROM product'
     connection.query(
         sql,[], (err, products) => {
-            res.render('dashboard.ejs', {products: products})
+            res.render('dashboard', {products: products})
         }
     )
 })
@@ -200,7 +250,7 @@ app.get('/additem', (req, res) => {
         description: '',
         image: ''
     }
-    res.render('additem.ejs', { error: false, item: item })
+    res.render('additem', { error: false, item: item })
 })
 
 app.post('/additem', upload.single('image'), (req, res) => {
@@ -326,11 +376,11 @@ app.post('/deactivate-all', (req, res) => {
 })
 
 app.get('/privacy-policy', (req, res) => {
-    res.render('privacy.ejs')
+    res.render('privacy')
 })
 
 app.get('/terms-of-service', (req, res) => {
-    res.render('terms.ejs')
+    res.render('terms')
 })
 
 app.get('/logout', (req, res) => {
