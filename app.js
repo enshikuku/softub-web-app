@@ -37,6 +37,8 @@ app.use(express.static('public'))
 
 app.use(express.urlencoded({ extended: false }))
 
+app.use(express.json())
+
 app.use(session({
     secret: 'agrhub',
     saveUninitialized: false,
@@ -207,7 +209,6 @@ app.post('/login-user', (req, res) => {
         admin: req.body.adminPIN
     }
     if (user.admin === ADMINPIN) {
-        console.log(user)
         let sql = 'SELECT * FROM user WHERE email = ?'
         connection.query(sql, [user.email], (error, results) => {
             if (results.length > 0) {
