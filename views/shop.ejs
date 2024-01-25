@@ -5,19 +5,17 @@
             <div class="section-title products-home">
                 <h2>Products</h2>
                 <p>Click to add to Cart</p>
-                <form id="cart-items">
-                    <div class="cart">
-                        <button type="submit" class="shop-now-btn scrollto">
-                            <i class="bi bi-cart-check"></i> View Cart -
-                            <span id="cart-counter">0</span>
-                        </button>
-                    </div>                        
-                </form>
+                <div class="cart">
+                    <button type="submit" class="shop-now-btn scrollto">
+                        <i class="bi bi-cart-check"></i> View Cart -
+                        <span id="cart-counter">0</span>
+                    </button>
+                </div>
             </div>
             <p class="item-added">Added to Cart!</p>
             <div class="shop-row">
                 <% products.forEach(product => { %>
-                    <button class="shop-btn" onclick="addinputandcartcount('<%= product.id %>')">
+                    <form action="/add-to-cart" method="post" class="shop-btn">
                         <div class="product-container"  data-aos="zoom-in" data-aos-delay="<%= products.indexOf(product)+1 %>00">
                             <div class="product-img">
                                 <img class="product-image" src="productimage/<%= product.image %>" alt="Product Image">
@@ -26,9 +24,24 @@
                                 <div class="product-name"><%= product.name %></div>
                                 <div class="product-price">$<%= product.price %></div>
                             </div>
-                            <div class="addtocart"><i class="bi bi-cart-plus"></i>Add to Cart</div>
+                            <label for="quantity">Quantity:</label>
+                            <select id="quantity" name="quantity">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10</option>
+                            </select>
+                            <input type="hidden" name="productid" value="<%= product.id %>">
+                            <input type="hidden" name="cartID" value="<%= cartID %>">
+                            <button class="addtocart" onclick="addcartcount()" type="submit"><i class="bi bi-cart-plus"></i>Add to Cart</button>
                         </div>
-                    </button>
+                    </form>
                 <% }) %>
             </div>
         </div>
