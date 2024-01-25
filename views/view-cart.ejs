@@ -1,38 +1,57 @@
 <%- include('partials/header') %>
-    <%- include('partials/nav') %>
-    <section id="products" class="products">
-        <div class="container" data-aos="fade-up">
-            <div class="section-title products-home">
-                <h2>Cart</h2>
-            </div>
-            <div class="shop-row" style="color: #fff;">
-                <% let total = 0 %>
-                <% if (cartItems && cartItems.length > 0) { %>
-                    <ul>
-                        <% cartItems.forEach(cartItem => { %>
-                            <li class="cart-products">
-                                <img src="productimage/<%= cartItem.product.image %>" alt="<%= cartItem.product.name %>">
-                                <div class="product-details">
-                                    <h3><%= cartItem.product.name %></h3>
-                                    <p class="quantity">Quantity: <%= cartItem.quantity %></p>
-                                    <p class="price">Price: $<%= parseFloat(cartItem.product.price).toFixed(2) %></p>
+<%- include('partials/nav') %>
+
+<section id="products" class="products">
+    <div class="container" data-aos="fade-up">
+        <div class="section-title products-home">
+            <h2>Cart</h2>
+        </div>
+        <div class="shop-row" style="color: #fff;">
+            <% let total = 0 %>
+            <% if (cartItems && cartItems.length > 0) { %>
+                <ul>
+                    <% cartItems.forEach(cartItem => { %>
+                        <span class="cart-products">
+                            <% if (cartItem) { %>
+                                <div class="my-cart">
+                                    <img src="productimage/<%= cartItem.image %>" width="200px" alt="<%= cartItem.name %>">
+                                    <div class="my-cart-details">
+                                        <div>
+                                            <h3><%= cartItem.name %></h3>
+                                            <p><span>$<%= parseFloat(cartItem.price).toFixed(2) %></span> | <span><%= cartItem.quantity %></span></p>
+                                            <% let itemtotalprice = (cartItem.quantity * parseFloat(cartItem.price)) %>
+                                            <p>Total: $<%= itemtotalprice %></p>
+                                        </div>
+                                        <form action="/remove-from-cart" method="post">
+                                            <input type="hidden" name="productid" value="<%= cartItem.id %>">
+                                            <input type="hidden" name="cartID" value="<%= cartID %>">
+                                            <div>
+                                                <button type="submit" class="remove-btn">Remove</button>
+                                            </div>
+                                        </form>
+                                    </div>
                                 </div>
-                                <% total += (cartItem.quantity * parseFloat(cartItem.product.price)) %>
-                            </li>                              
-                        <% }); %>
-                    </ul>
-                <% } else { %>
-                    <p>Your cart is empty.</p>
-                <% } %>
+                                <% total += (cartItem.quantity * parseFloat(cartItem.price)) %>
+                            <% } else { %>
+                                <!-- Handle case where product is not found -->
+                                <p>Product not found</p>
+                            <% } %>
+                        </span>                              
+                    <% }) %>
+                </ul>
                 <form action="/submit-order" method="post" id="cart-items">
                     <div class="cart">
-                    <button type="submit" class="shop-now-btn scrollto">
-                        <i class="bi bi-cart-check"></i> Submit Order -
-                        <span id="cart-counter">Total: $<%= total.toFixed(2) %></span>
-                    </button>
+                        <button type="submit" class="shop-now-btn scrollto">
+                            <i class="bi bi-cart-check"></i> Submit Order -
+                            <span id="cart-counter">Total: $<%= total.toFixed(2) %></span>
+                        </button>
                     </div>
                 </form>
-            </div>
+            <% } else { %>
+                <p>Your cart is empty.</p>
+            <% } %>
         </div>
-    </section>
+    </div>
+</section>
+
 <%- include('partials/footer') %>
