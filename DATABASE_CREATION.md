@@ -10,7 +10,7 @@ CREATE TABLE product (
     description TEXT,
     image VARCHAR(255),
     price VARCHAR(255),
-  	isactive VARCHAR(10),
+    isactive VARCHAR(10) DEFAULT 'active',
     timestamp TIMESTAMP
 );
 
@@ -23,7 +23,7 @@ CREATE TABLE user (
     name VARCHAR(255),
     email VARCHAR(255),
     password VARCHAR(255),
-    isactive VARCHAR(10),
+    isactive VARCHAR(10) DEFAULT 'active',
     timestamp TIMESTAMP
 );
 ```
