@@ -4,6 +4,7 @@ import session from 'express-session'
 import bcrypt from 'bcrypt'
 import multer from 'multer'
 import dotenv, { parse } from 'dotenv'
+import nodemailer from "nodemailer";
 
 
 const app = express()
@@ -137,6 +138,51 @@ app.post('/add-to-cart', (req, res) => {
             }
         )
     }
+})
+
+app.get('/view-cart', (req, res) => {
+    let sql = `
+        SELECT ss.quantity, p.*
+        FROM shopsession ss
+        JOIN product p ON ss.productid = p.id
+        WHERE ss.cartid = ? AND ss.isactive = 'active'
+    `
+    connection.query(
+        sql,
+        [req.session.cartID],
+        (error, cartItems) => {
+            if (error) throw error
+
+            let total = 0
+
+            if (cartItems && cartItems.length > 0) {
+                cartItems.forEach(cartItem => {
+                    total += (cartItem.quantity * parseFloat(cartItem.price))
+                })
+            }
+
+            res.render('view-cart', { cartItems: cartItems, total: total, cartID: req.session.cartID})
+            console.log(cartItems, total)
+        }
+    )
+})
+
+app.post('/remove-from-cart', (req, res) => {
+    let sql = 'DELETE FROM shopsession WHERE productid = ? AND cartid = ?'
+    connection.query(
+        sql,
+        [
+            req.body.productid,
+            req.body.cartID
+        ],
+        (error, results) => {
+            res.redirect('/view-cart')
+        }
+    )
+})
+
+app.get('/viewcart', (req, res) => {
+    res.render('viewcart')
 })
 
 app.get('/register', (req, res) => {
