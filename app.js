@@ -61,8 +61,7 @@ function generateid() {
     return genID
 }
 
-function checkIfIdExists(id, table) {
-    let sql = `SELECT * FROM ${table} WHERE id = ?`
+function checkIfIdExists(id, sql) {
     connection.query(sql, [id], (error, results) => {
         if (results.length > 0) {
             return true
@@ -82,7 +81,7 @@ app.get('/', (req, res) => {
 })
 
 app.get('/shop', (req, res) => {
-    let table = 'shopsession'
+    let table = 'SELECT * FROM shopsession WHERE cartid = ?'
     let newId = ''
     if (req.session.cartID === undefined) {
         do {
@@ -168,11 +167,11 @@ app.post('/register', (req, res) => {
                     user.email = ''
                     res.render('register', { error: true, message: message, user: user })
                 } else {
-                    let table = 'user'
                     let newId = ''
+                    let sql = 'SELECT * FROM user WHERE id = ?'
                     do {
                         newId = generateid()
-                    } while (checkIfIdExists(newId, table))
+                    } while (checkIfIdExists(newId, sql))
                     bcrypt.hash(user.password, 10, (err, hash) => {
                         let sql = 'INSERT INTO user (name, email, password, id) VALUES (?, ?, ?, ?)'
                         connection.query(sql, [user.name, user.email, hash, newId], (error, results) => {
@@ -262,11 +261,11 @@ app.post('/additem', upload.single('image'), (req, res) => {
         description: req.body.description,
         image: req.file.filename
     }
-    let table = 'product'
     let newId = ''
+    let psql = 'SELECT * FROM product WHERE id = ?'
     do {
         newId = generateid()
-    } while (checkIfIdExists(newId, table))
+    } while (checkIfIdExists(newId, psql))
     let sql = 'INSERT INTO product (id, name, price, description, image) VALUES (?, ?, ?, ?, ?)'
     connection.query(
         sql,
