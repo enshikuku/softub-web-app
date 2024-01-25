@@ -1,0 +1,38 @@
+<%- include('partials/header') %>
+    <%- include('partials/nav') %>
+    <section id="products" class="products">
+        <div class="container" data-aos="fade-up">
+            <div class="section-title products-home">
+                <h2>Cart</h2>
+            </div>
+            <div class="shop-row" style="color: #fff;">
+                <% let total = 0 %>
+                <% if (cartItems && cartItems.length > 0) { %>
+                    <ul>
+                        <% cartItems.forEach(cartItem => { %>
+                            <li class="cart-products">
+                                <img src="productimage/<%= cartItem.product.image %>" alt="<%= cartItem.product.name %>">
+                                <div class="product-details">
+                                    <h3><%= cartItem.product.name %></h3>
+                                    <p class="quantity">Quantity: <%= cartItem.quantity %></p>
+                                    <p class="price">Price: $<%= parseFloat(cartItem.product.price).toFixed(2) %></p>
+                                </div>
+                                <% total += (cartItem.quantity * parseFloat(cartItem.product.price)) %>
+                            </li>                              
+                        <% }); %>
+                    </ul>
+                <% } else { %>
+                    <p>Your cart is empty.</p>
+                <% } %>
+                <form action="/submit-order" method="post" id="cart-items">
+                    <div class="cart">
+                    <button type="submit" class="shop-now-btn scrollto">
+                        <i class="bi bi-cart-check"></i> Submit Order -
+                        <span id="cart-counter">Total: $<%= total.toFixed(2) %></span>
+                    </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+<%- include('partials/footer') %>
