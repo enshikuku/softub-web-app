@@ -810,6 +810,42 @@ section {
 }
 
 
+.shop-row ul li.cart-products {
+  list-style: none;
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.shop-row ul li.cart-products img {
+  max-width: 100px;
+  margin-right: 10px;
+}
+
+.shop-row ul li.cart-products .product-details {
+  flex-grow: 1;
+}
+
+.shop-row ul li.cart-products h3 {
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+.shop-row ul li.cart-products p {
+  margin: 0;
+}
+
+.shop-row ul li.cart-products .quantity {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.shop-row ul li.cart-products .price {
+  font-weight: bold;
+}
+
 /*--------------------------------------------------------------
 # Testimonials
 --------------------------------------------------------------*/
