@@ -48,9 +48,17 @@
                     </div>
                 </form>
             <% } else { %>
-                <p>Your cart is empty.</p>
+                <p>Your cart is empty. <a href="/shop">Back to Shop</a></p>
             <% } %>
         </div>
+        <% if (cartItems && cartItems.length > 0) { %>
+            <form action="/clear-cart" method="post">
+                <input type="hidden" name="cartID" value="<%= cartID %>">
+                <div>
+                    <button type="submit" class="remove-btn">Clear Cart</button>
+                </div>
+            </form>
+        <% } %>
     </div>
 </section>
 
