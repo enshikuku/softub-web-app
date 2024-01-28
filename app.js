@@ -3,8 +3,8 @@ import mysql from 'mysql'
 import session from 'express-session'
 import bcrypt from 'bcrypt'
 import multer from 'multer'
-import dotenv, { parse } from 'dotenv'
-import nodemailer from "nodemailer";
+import dotenv from 'dotenv'
+import nodemailer from 'nodemailer'
 
 
 const app = express()
@@ -49,6 +49,108 @@ app.use(session({
 app.use((req, res, next) => {
     res.locals.isLogedIn = (req.session.userID !== undefined)
     next()
+})
+
+const config = {
+    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    auth: {
+        user: 'softubhub@gmail.com',
+        pass: 'hmdgoknsbkonlztn'
+    }
+}
+
+const send = (data) => {
+    const transporter = nodemailer.createTransport(config)
+    transporter.sendMail(data, (err, info) => {
+        if (err) {
+            console.log(err)
+        } else {
+            return info.response
+        }
+    })
+}  
+
+const data = {
+    from: 'softubhub@gmail.com',
+    to: 'tonnyblaire067@gmail.com',
+    subject: 'New Softtubhub Order!',
+    text: ''
+}
+
+app.post('/submit-order', (req, res) => {
+    let sql = `
+        SELECT ss.quantity, p.*
+        FROM shopsession ss
+        JOIN product p ON ss.productid = p.id
+        WHERE ss.cartid = ? AND ss.isactive = 'active'
+    `
+    connection.query(
+        sql,
+        [req.session.cartID],
+        (error, cartItems) => {
+            if (error) throw error
+
+            let total = 0
+
+            if (cartItems && cartItems.length > 0) {
+                cartItems.forEach(cartItem => {
+                    total += (cartItem.quantity * parseFloat(cartItem.price))
+                })
+            }
+
+            let order = {
+                name: req.body.name,
+                email: req.body.email,
+                address: req.body.address,
+                cartItems: cartItems,
+                total: total
+            }
+
+            data.text = `
+            Name: ${order.name}
+            Email: ${order.email}
+            Address: ${order.address}
+            Total: $${order.total}
+        
+            Cart Items:
+                ${order.cartItems.map(cartItem => `
+                    Product: $${cartItem.name}
+                    Quantity: $${cartItem.quantity}
+                    Price: $${cartItem.price * cartItem.quantity}
+                    -------------------------
+                `).join('')}
+            `
+        
+
+            send(data)
+
+            let sql = 'UPDATE shopsession SET isactive = ? WHERE cartid = ?'
+            connection.query(
+                sql,
+                [
+                    'inactive',
+                    req.session.cartID
+                ],
+                (error, results) => {
+                    res.redirect('/shop')
+                }
+            )
+        }
+    )
+})
+
+app.post('/clear-cart', (req, res) => {
+    let sql = 'DELETE FROM shopsession WHERE cartid = ?'
+    connection.query(
+        sql,
+        [req.session.cartID],
+        (error, results) => {
+            res.redirect('/shop')
+        }
+    )
 })
 
 function loginRequired(req, res) {
@@ -162,24 +264,28 @@ app.get('/view-cart', (req, res) => {
             }
 
             res.render('view-cart', { cartItems: cartItems, total: total, cartID: req.session.cartID})
-            console.log(cartItems, total)
         }
     )
 })
 
 app.post('/remove-from-cart', (req, res) => {
-    let sql = 'DELETE FROM shopsession WHERE productid = ? AND cartid = ?'
-    connection.query(
-        sql,
-        [
-            req.body.productid,
-            req.body.cartID
-        ],
-        (error, results) => {
-            res.redirect('/view-cart')
+    let selectSql = 'SELECT quantity FROM shopsession WHERE productid = ? AND cartid = ?'
+    connection.query(selectSql, [req.body.productid, req.body.cartID], (selectError, selectResults) => {
+        let currentQuantity = selectResults[0].quantity
+        if (currentQuantity > 1) {
+            let updateSql = 'UPDATE shopsession SET quantity = ? WHERE productid = ? AND cartid = ?'
+            connection.query(updateSql, [currentQuantity - 1, req.body.productid, req.body.cartID], (updateError, updateResults) => {
+                res.redirect('/view-cart')
+            })
+        } else {
+            let deleteSql = 'DELETE FROM shopsession WHERE productid = ? AND cartid = ?'
+            connection.query(deleteSql, [req.body.productid, req.body.cartID], (deleteError, deleteResults) => {
+                res.redirect('/view-cart')
+            })
         }
-    )
+    })
 })
+
 
 app.get('/viewcart', (req, res) => {
     res.render('viewcart')
