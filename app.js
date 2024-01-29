@@ -6,7 +6,6 @@ import multer from 'multer'
 import dotenv from 'dotenv'
 import nodemailer from 'nodemailer'
 
-
 const app = express()
 
 const connection = mysql.createConnection({
@@ -25,7 +24,6 @@ const storage = multer.diskStorage({
         cb(null, file.fieldname + '-' + uniqueSuffix)
     }
 })
-
 
 const upload = multer({ storage: storage })
 
@@ -71,13 +69,6 @@ const send = (data) => {
             return info.response
         }
     })
-}  
-
-const data = {
-    from: 'softubhub@gmail.com',
-    to: 'tonnyblaire067@gmail.com',
-    subject: 'New Softtubhub Order!',
-    text: ''
 }
 
 app.post('/submit-order', (req, res) => {
@@ -109,35 +100,108 @@ app.post('/submit-order', (req, res) => {
                 total: total
             }
 
-            data.text = `
-            Name: ${order.name}
-            Email: ${order.email}
-            Address: ${order.address}
-            Total: $${order.total}
-        
-            Cart Items:
+            const orderEmailData = {
+                from: 'softubhub@gmail.com',
+                to: order.email,
+                subject: 'Your Softtubhub Order Recieved!',
+                text: `
+                Thank you for your order!
+                Our team will contact you to confirm shipment, payment, and delivery details. Before then, please review and confirm your order:
+                Details:
+                Name: ${order.name}
+                Email: ${order.email}
+                Address: ${order.address}
+                Total: $${order.total}
+                Cart Items:
                 ${order.cartItems.map(cartItem => `
-                    Product: $${cartItem.name}
-                    Quantity: $${cartItem.quantity}
+                    Product: ${cartItem.name}
+                    Quantity: ${cartItem.quantity}
                     Price: $${cartItem.price * cartItem.quantity}
                     -------------------------
                 `).join('')}
-            `
-        
 
-            send(data)
+                If any of these details are incorrect, please email us immediately at softubhub@gmail.com.
+                `
+            }
 
-            let sql = 'UPDATE shopsession SET isactive = ? WHERE cartid = ?'
+            // Send email to the person ordering
+            send(orderEmailData);
+
+            const storeOwnerData = {
+                from: 'softubhub@gmail.com',
+                to: 'softubhub@gmail.com',
+                subject: 'New Order Received!',
+                text: `A new order has been received. Details: \n\n${orderEmailData.text}`
+            };
+
+            // Send email to the store owner
+            send(storeOwnerData);
+
+            let updateSql = 'UPDATE shopsession SET isactive = ? WHERE cartid = ?'
             connection.query(
-                sql,
-                [
-                    'inactive',
-                    req.session.cartID
-                ],
+                updateSql,
+                ['inactive', req.session.cartID],
                 (error, results) => {
                     res.redirect('/shop')
                 }
             )
+        }
+    )
+})
+
+app.post('/send-message', (req, res) => {
+    let name = req.body.name
+    let email = req.body.email
+    let subject = req.body.subject
+    let message = req.body.message
+    let sql = 'INSERT INTO message (name, email, message, subject) VALUES (?, ?, ?, ?)'
+    connection.query(
+        sql,
+        [name, email, message, subject],
+        (error, results) => {
+            if (error) throw error
+            // Send email notification to softubhub@gmail.com
+            const messageData = {
+                from: 'softubhub@gmail.com',
+                to: 'softubhub@gmail.com',
+                subject: 'New Message Received',
+                text: `Name: ${name}\nEmail: ${email}\nSubject: ${subject}\nMessage: ${message}`
+            };
+            send(messageData);
+            res.redirect('/')
+        }
+    )
+})
+
+app.post('/suscribe-to-news-letter', (req, res) => {
+    let email = req.body.email
+    let sql = 'SELECT * FROM newsletter WHERE email = ?'
+    connection.query(
+        sql,
+        [email],
+        (error, results) => {
+            if (error) throw error
+            if (results.length > 0) {
+                res.redirect('/shop')
+            } else {
+                let insertSql = 'INSERT INTO newsletter (email) VALUES (?)'
+                connection.query(
+                    insertSql,
+                    [email],
+                    (error, results) => {
+                        if (error) throw error
+                        // Send confirmation email to the subscriber
+                        const confirmationData = {
+                            from: 'softubhub@gmail.com',
+                            to: email,
+                            subject: 'Newsletter Subscription Confirmation',
+                            text: 'Thank you for subscribing to our newsletter!'
+                        };
+                        send(confirmationData);
+                        res.redirect('/')
+                    }
+                )
+            }
         }
     )
 })
