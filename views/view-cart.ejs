@@ -33,17 +33,31 @@
                                 </div>
                                 <% total += (cartItem.quantity * parseFloat(cartItem.price)) %>
                             <% } else { %>
-                                <!-- Handle case where product is not found -->
-                                <p>Product not found</p>
+                                <p>Product not found. <a href="/shop">Back to Shop</a></p>
                             <% } %>
                         </span>                              
                     <% }) %>
                 </ul>
-                <form action="/submit-order" method="post" id="cart-items">
-                    <div class="cart">
-                        <button type="submit" class="shop-now-btn scrollto">
-                            <i class="bi bi-cart-check"></i> Submit Order -
-                            <span id="cart-counter">Total: $<%= total.toFixed(2) %></span>
+                <form action="/clear-cart" method="post" class="clear-cart-form" >
+                    <input type="hidden" name="cartID" value="<%= cartID %>">
+                    <div class="text-center"><input type="submit" style="border: 2px solid #000;" class="remove-btn" value="Clear Cart"></div>
+                </form>
+                <form action="/submit-order" method="post"  class="php-email-form" style="background-color: #000;">
+                    <h3>Input your details to submit Order. Total: $<%= total.toFixed(2) %></h3>
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <input type="text" name="name" class="form-control" id="name" placeholder="Your Name" required>
+                        </div>
+                        <div class="col-md-6 form-group mt-3 mt-md-0">
+                            <input type="email" class="form-control" name="email" id="email" placeholder="Your Email" required>
+                        </div>
+                    </div>
+                    <div class="form-group mt-3">
+                        <input type="text" class="form-control" name="address" id="address" placeholder="Your Address" required>
+                    </div>
+                    <div class="form-group mt-3">
+                        <button type="submit" class="shop-now-btn">
+                            <i class="bi bi-cart-check"></i> Submit Order
                         </button>
                     </div>
                 </form>
@@ -51,14 +65,6 @@
                 <p>Your cart is empty. <a href="/shop">Back to Shop</a></p>
             <% } %>
         </div>
-        <% if (cartItems && cartItems.length > 0) { %>
-            <form action="/clear-cart" method="post">
-                <input type="hidden" name="cartID" value="<%= cartID %>">
-                <div>
-                    <button type="submit" class="remove-btn">Clear Cart</button>
-                </div>
-            </form>
-        <% } %>
     </div>
 </section>
 

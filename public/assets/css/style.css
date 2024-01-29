@@ -854,6 +854,14 @@ section {
   color: white;
 }
 
+.clear-cart-form {
+  width: 100%;
+  display: flex;
+  justify-content: left;
+  align-items: left;
+  margin-bottom: 20px;
+}
+
 .remove-btn {
   background-color: #f44336;
   color: white;
