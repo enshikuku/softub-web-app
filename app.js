@@ -39,7 +39,7 @@ app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
 
 app.use(session({
-    secret: 'agrhub',
+    secret: 'softubhub',
     saveUninitialized: false,
     resave: true
 }))
@@ -60,162 +60,53 @@ const config = {
     }
 }
 
-const send = (data) => {
+const sendEmail = (data) => {
     const transporter = nodemailer.createTransport(config)
     transporter.sendMail(data, (err, info) => {
         if (err) {
-            console.log(err)
+            console.error('Error sending email:', err)
         } else {
-            return info.response
+            console.log('Email sent:', info.response)
         }
     })
 }
 
-app.post('/submit-order', (req, res) => {
-    let sql = `
-        SELECT ss.quantity, p.*
-        FROM shopsession ss
-        JOIN product p ON ss.productid = p.id
-        WHERE ss.cartid = ? AND ss.isactive = 'active'
-    `
-    connection.query(
-        sql,
-        [req.session.cartID],
-        (error, cartItems) => {
-            if (error) throw error
+const generateOrderConfirmationEmail = (order) => {
+    const cartItemsText = order.cartItems.map(cartItem => `
+        Product: ${cartItem.name}
+        Quantity: ${cartItem.quantity}
+        Price: $${cartItem.price * cartItem.quantity}
+        -------------------------
+    `).join('')
 
-            let total = 0
+    return {
+        from: 'softubhub@gmail.com',
+        to: order.email,
+        subject: 'Your Softtubhub Order Received!',
+        text: `
+            Thank you for your order!
+            Our team will contact you to confirm shipment, payment, and delivery details. Before then, please review and confirm your order:
+            Details:
+            Name: ${order.name}
+            Email: ${order.email}
+            Address: ${order.address}
+            Total: $${order.total}
+            Cart Items:
+            ${cartItemsText}
+            
+            If any of these details are incorrect, please email us immediately at softubhub@gmail.com.
+        `
+    }
+}
 
-            if (cartItems && cartItems.length > 0) {
-                cartItems.forEach(cartItem => {
-                    total += (cartItem.quantity * parseFloat(cartItem.price))
-                })
-            }
-
-            let order = {
-                name: req.body.name,
-                email: req.body.email,
-                address: req.body.address,
-                cartItems: cartItems,
-                total: total
-            }
-
-            const orderEmailData = {
-                from: 'softubhub@gmail.com',
-                to: order.email,
-                subject: 'Your Softtubhub Order Recieved!',
-                text: `
-                Thank you for your order!
-                Our team will contact you to confirm shipment, payment, and delivery details. Before then, please review and confirm your order:
-                Details:
-                Name: ${order.name}
-                Email: ${order.email}
-                Address: ${order.address}
-                Total: $${order.total}
-                Cart Items:
-                ${order.cartItems.map(cartItem => `
-                    Product: ${cartItem.name}
-                    Quantity: ${cartItem.quantity}
-                    Price: $${cartItem.price * cartItem.quantity}
-                    -------------------------
-                `).join('')}
-
-                If any of these details are incorrect, please email us immediately at softubhub@gmail.com.
-                `
-            }
-
-            // Send email to the person ordering
-            send(orderEmailData);
-
-            const storeOwnerData = {
-                from: 'softubhub@gmail.com',
-                to: 'softubhub@gmail.com',
-                subject: 'New Order Received!',
-                text: `A new order has been received. Details: \n\n${orderEmailData.text}`
-            };
-
-            // Send email to the store owner
-            send(storeOwnerData);
-
-            let updateSql = 'UPDATE shopsession SET isactive = ? WHERE cartid = ?'
-            connection.query(
-                updateSql,
-                ['inactive', req.session.cartID],
-                (error, results) => {
-                    res.redirect('/shop')
-                }
-            )
-        }
-    )
-})
-
-app.post('/send-message', (req, res) => {
-    let name = req.body.name
-    let email = req.body.email
-    let subject = req.body.subject
-    let message = req.body.message
-    let sql = 'INSERT INTO message (name, email, message, subject) VALUES (?, ?, ?, ?)'
-    connection.query(
-        sql,
-        [name, email, message, subject],
-        (error, results) => {
-            if (error) throw error
-            // Send email notification to softubhub@gmail.com
-            const messageData = {
-                from: 'softubhub@gmail.com',
-                to: 'softubhub@gmail.com',
-                subject: 'New Message Received',
-                text: `Name: ${name}\nEmail: ${email}\nSubject: ${subject}\nMessage: ${message}`
-            };
-            send(messageData);
-            res.redirect('/')
-        }
-    )
-})
-
-app.post('/suscribe-to-news-letter', (req, res) => {
-    let email = req.body.email
-    let sql = 'SELECT * FROM newsletter WHERE email = ?'
-    connection.query(
-        sql,
-        [email],
-        (error, results) => {
-            if (error) throw error
-            if (results.length > 0) {
-                res.redirect('/shop')
-            } else {
-                let insertSql = 'INSERT INTO newsletter (email) VALUES (?)'
-                connection.query(
-                    insertSql,
-                    [email],
-                    (error, results) => {
-                        if (error) throw error
-                        // Send confirmation email to the subscriber
-                        const confirmationData = {
-                            from: 'softubhub@gmail.com',
-                            to: email,
-                            subject: 'Newsletter Subscription Confirmation',
-                            text: 'Thank you for subscribing to our newsletter!'
-                        };
-                        send(confirmationData);
-                        res.redirect('/')
-                    }
-                )
-            }
-        }
-    )
-})
-
-app.post('/clear-cart', (req, res) => {
-    let sql = 'DELETE FROM shopsession WHERE cartid = ?'
-    connection.query(
-        sql,
-        [req.session.cartID],
-        (error, results) => {
-            res.redirect('/shop')
-        }
-    )
-})
+const generateMessageNotificationEmail = (name, email, subject, message) => {
+    return {
+        from: 'softubhub@gmail.com',
+        to: 'softubhub@gmail.com',
+        subject: 'New Message Received',
+        text: `Name: ${name}\nEmail: ${email}\nSubject: ${subject}\nMessage: ${message}`
+    }
+}
 
 function loginRequired(req, res) {
     res.locals.isLogedIn || res.redirect('/login')
@@ -350,9 +241,66 @@ app.post('/remove-from-cart', (req, res) => {
     })
 })
 
+app.post('/clear-cart', (req, res) => {
+    let sql = 'DELETE FROM shopsession WHERE cartid = ?'
+    connection.query(
+        sql,
+        [req.session.cartID],
+        (error, results) => {
+            res.redirect('/shop')
+        }
+    )
+})
 
-app.get('/viewcart', (req, res) => {
-    res.render('viewcart')
+app.post('/submit-order', (req, res) => {
+    let sql = `
+        SELECT ss.quantity, p.*
+        FROM shopsession ss
+        JOIN product p ON ss.productid = p.id
+        WHERE ss.cartid = ? AND ss.isactive = 'active'
+    `
+    connection.query(
+        sql,
+        [req.session.cartID],
+        (error, cartItems) => {
+            if (error) throw error
+
+            let total = 0
+
+            if (cartItems && cartItems.length > 0) {
+                cartItems.forEach(cartItem => {
+                    total += (cartItem.quantity * parseFloat(cartItem.price))
+                })
+            }
+
+            let order = {
+                name: req.body.name,
+                email: req.body.email,
+                address: req.body.address,
+                cartItems: cartItems,
+                total: total
+            }
+
+            const orderEmailData = generateOrderConfirmationEmail(order)
+            sendEmail(orderEmailData)
+
+            const storeOwnerData = generateMessageNotificationEmail(order.name, order.email, 'New Order Received', orderEmailData.text)
+            sendEmail(storeOwnerData)
+
+            let updateSql = 'UPDATE shopsession SET isactive = ? WHERE cartid = ?'
+            connection.query(
+                updateSql,
+                ['inactive', req.session.cartID],
+                (error, results) => {
+                    if (error) {
+                        console.error('Error updating cart status:', error)
+                        return res.status(500).send('An error occurred while processing your order.')
+                    }
+                    res.redirect('/shop')
+                }
+            )
+        }
+    )
 })
 
 app.get('/register', (req, res) => {
@@ -364,6 +312,71 @@ app.get('/register', (req, res) => {
         adminPIN: ''
     }
     res.render('register', { error: false, user: user })
+})
+
+app.post('/send-message', (req, res) => {
+    let name = req.body.name
+    let email = req.body.email
+    let subject = req.body.subject
+    let message = req.body.message
+    
+    let sql = 'INSERT INTO message (name, email, message, subject) VALUES (?, ?, ?, ?)'
+    connection.query(
+        sql,
+        [name, email, message, subject],
+        (error, results) => {
+            if (error) {
+                console.error('Error inserting message into database:', error)
+                return res.status(500).send('An error occurred while processing your message.')
+            }
+
+            const messageData = generateMessageNotificationEmail(name, email, subject, message)
+            sendEmail(messageData)
+
+            res.redirect('/')
+        }
+    )
+})
+
+app.post('/suscribe-to-news-letter', (req, res) => {
+    let email = req.body.email
+    let sql = 'SELECT * FROM newsletter WHERE email = ?'
+    connection.query(
+        sql,
+        [email],
+        (error, results) => {
+            if (error) {
+                console.error('Error fetching newsletter subscription:', error)
+                return res.status(500).send('An error occurred while processing your request.')
+            }
+
+            if (results.length > 0) {
+                res.redirect('/shop')
+            } else {
+                let insertSql = 'INSERT INTO newsletter (email) VALUES (?)'
+                connection.query(
+                    insertSql,
+                    [email],
+                    (error, results) => {
+                        if (error) {
+                            console.error('Error inserting newsletter subscription:', error)
+                            return res.status(500).send('An error occurred while processing your request.')
+                        }
+
+                        const confirmationData = {
+                            from: 'softubhub@gmail.com',
+                            to: email,
+                            subject: 'Newsletter Subscription Confirmation',
+                            text: 'Thank you for subscribing to our newsletter!'
+                        }
+                        sendEmail(confirmationData)
+
+                        res.redirect('/')
+                    }
+                )
+            }
+        }
+    )
 })
 
 app.post('/register', (req, res) => {
