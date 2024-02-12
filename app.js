@@ -1,10 +1,10 @@
-const express = require('express')
-const mysql = require('mysql')
-const session = require('express-session')
-const bcrypt = require('bcrypt')
-const multer = require('multer')
-const dotenv = require('dotenv')
-const nodemailer = require('nodemailer')
+import express from 'express';
+import mysql from 'mysql';
+import session from 'express-session';
+import bcrypt from 'bcrypt';
+import multer from 'multer';
+import dotenv from 'dotenv';
+import nodemailer from 'nodemailer';
 
 const app = express()
 
