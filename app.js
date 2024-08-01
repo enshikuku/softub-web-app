@@ -1,18 +1,26 @@
-import express from 'express';
-import mysql from 'mysql';
-import session from 'express-session';
-import bcrypt from 'bcrypt';
-import multer from 'multer';
-import dotenv from 'dotenv';
-import nodemailer from 'nodemailer';
+import express from 'express'
+import mysql from 'mysql'
+import session from 'express-session'
+import bcrypt from 'bcrypt'
+import multer from 'multer'
+import dotenv from 'dotenv'
+import nodemailer from 'nodemailer'
+import fs from 'fs'
 
 const app = express()
 
+const ca = fs.readFileSync(path.resolve(process.cwd(), "ca.pem"))
+
+
 const connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'softhub'
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    port: process.env.DB_PORT,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    ssl: {
+        ca: ca,
+    }
 })
 
 const storage = multer.diskStorage({
