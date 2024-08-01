@@ -6,6 +6,8 @@ import multer from 'multer'
 import dotenv from 'dotenv'
 import nodemailer from 'nodemailer'
 import fs from 'fs'
+import path from 'path'
+
 
 const app = express()
 
