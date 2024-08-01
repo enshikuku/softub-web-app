@@ -85,20 +85,24 @@
                     <a href="/shop" class="shop-now-btn scrollto">SHOP NOW</a>
                 </div>
                 <div class="shop-row">
-                    <% products.forEach(product => { %>
-                        <a href="/shop" class="shop-btn" style="color: black;">
-                            <div class="product-container"  data-aos="zoom-in" data-aos-delay="<%= products.indexOf(product)+1 %>00">
-                                <div class="product-img">
-                                    <img class="product-image" src="productimage/<%= product.image %>" alt="Product Image">
+                    <% if (products) { %>
+                        <% products.forEach(product => { %>
+                            <a href="/shop" class="shop-btn" style="color: black;">
+                                <div class="product-container"  data-aos="zoom-in" data-aos-delay="<%= products.indexOf(product)+1 %>00">
+                                    <div class="product-img">
+                                        <img class="product-image" src="productimage/<%= product.image %>" alt="Product Image">
+                                    </div>
+                                    <div class="product-details">
+                                        <div class="product-name"><%= product.name %></div>
+                                        <div class="product-price">$<%= product.price %></div>
+                                    </div>
+                                    <div class="addtocart"><i class="bi bi-cart-plus"></i>Shop Now</div>
                                 </div>
-                                <div class="product-details">
-                                    <div class="product-name"><%= product.name %></div>
-                                    <div class="product-price">$<%= product.price %></div>
-                                </div>
-                                <div class="addtocart"><i class="bi bi-cart-plus"></i>Shop Now</div>
-                            </div>
-                        </a>
-                    <% }) %>
+                            </a>
+                        <% }) %>
+                    <% } else { %>
+                        <p>No products available</p>
+                    <% } %>
                 </div>
             </div>
         </section><!-- End Products Section -->
